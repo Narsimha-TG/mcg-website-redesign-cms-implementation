@@ -16,12 +16,16 @@ def test_analytics_endpoint():
 
 def test_post_reviews_endpoint():
     payload = {
-        "id": "test-123",
-        "title": "Test Action",
-        "status": "pending",
+        "id": "task-123",
+        "title": "Quality Check",
+        "status": "completed",
         "score": 0.95,
-        "timestamp": "2023-10-27T10:00:00Z"
+        "timestamp": "2023-10-27T10:00:00Z",
+        "robot_unit_id": "bot-001",
+        "task_type": "inspection",
+        "decision_confidence": 0.98,
+        "execution_time_ms": 150
     }
     response = client.post("/api/reviews", json=payload)
     assert response.status_code in [200, 201]
-    assert response.json()["id"] == "test-123"
+    assert response.json()["status"] == "success"
