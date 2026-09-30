@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,15 @@
     <title>Robotics AI Task Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { safety: { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' } } } } }
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { extend: { colors: { safety: { emerald: '#10b981', amber: '#f59e0b', red: '#ef4444' } } } }
+        }
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            fetch('/api/settings/theme', { method: 'PATCH', body: JSON.stringify({ theme_preference: isDark ? 'dark' : 'light' }) });
+        }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -16,34 +24,34 @@
         .mono { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen">
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 min-h-screen transition-colors duration-300">
+    <header class="border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400">⚡</div>
+                <div class="w-8 h-8 bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">⚡</div>
                 <h1 class="font-bold tracking-tight">FREELANCE CYCLE AUTOMATION</h1>
             </div>
-            <div id="system-badge" class="px-3 py-1 border border-emerald-900 bg-emerald-950/30 text-emerald-400 text-[10px] font-mono tracking-widest uppercase">
-                System Active: Freelance Node
-            </div>
+            <button onclick="toggleTheme()" class="px-4 py-1 border border-slate-300 dark:border-slate-700 text-xs font-mono uppercase hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                Toggle Theme
+            </button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto p-6 space-y-6">
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6">
+            <div class="md:col-span-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-xs font-mono text-slate-500 mb-4 uppercase">Active Freelance Task Queue</h2>
                 <div id="task-list" class="space-y-2">
-                    <div class="flex items-center justify-between p-3 bg-slate-950 border border-slate-800">
+                    <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
                         <span class="font-mono text-sm">TASK_ID: 8842-X</span>
-                        <span class="text-emerald-500 text-xs">IN_PROGRESS</span>
+                        <span class="text-emerald-600 dark:text-emerald-500 text-xs">IN_PROGRESS</span>
                     </div>
                 </div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-xs font-mono text-slate-500 mb-4 uppercase">Dispatch Control</h2>
                 <form id="dispatch-form" class="space-y-4">
-                    <input type="text" placeholder="Freelance Task Payload" class="w-full bg-slate-950 border border-slate-800 p-2 text-sm font-mono focus:border-emerald-500 outline-none">
+                    <input type="text" placeholder="Freelance Task Payload" class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 p-2 text-sm font-mono focus:border-emerald-500 outline-none">
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-3 uppercase tracking-widest transition-all">
                         Execute Cycle
                     </button>
@@ -52,16 +60,15 @@
         </section>
 
         <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-xs font-mono text-slate-500 mb-4 uppercase">Human-in-the-loop Review</h2>
-                <button onclick="submitReview()" class="w-full border border-amber-600 text-amber-500 hover:bg-amber-600 hover:text-white py-2 text-xs font-bold uppercase transition-colors">
+                <button onclick="submitReview()" class="w-full border border-amber-600 text-amber-600 dark:text-amber-500 hover:bg-amber-600 hover:text-white py-2 text-xs font-bold uppercase transition-colors">
                     Approve Pending Audit
                 </button>
             </div>
-            <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-xs font-mono text-slate-500 mb-4 uppercase">Real-time Telemetry Stream</h2>
                 <div id="telemetry-container" class="h-24 flex items-end gap-1">
-                    <!-- Telemetry data injected here -->
                     <div class="w-full bg-emerald-500/30 h-1/2 animate-pulse"></div>
                     <div class="w-full bg-emerald-500 h-3/4"></div>
                     <div class="w-full bg-emerald-500/30 h-1/3"></div>
@@ -76,17 +83,6 @@
             await fetch('/api/reviews', { method: 'POST', body: JSON.stringify({ status: 'approved' }) });
             alert('Review Submitted');
         }
-        
-        async function fetchTelemetry() {
-            try {
-                const response = await fetch('/api/telemetry');
-                const data = await response.json();
-                console.log('Telemetry Data:', data);
-            } catch (e) {
-                console.error('Telemetry fetch failed');
-            }
-        }
-        setInterval(fetchTelemetry, 2000);
     </script>
 </body>
 </html>

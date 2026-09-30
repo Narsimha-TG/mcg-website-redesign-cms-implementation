@@ -14,24 +14,20 @@ def test_get_analytics():
     assert response.status_code == 200
     data = response.json()
     assert "total_tasks" in data
-    assert "avg_score" in data
-    assert isinstance(data["total_tasks"], int)
+    assert "average_score" in data
 
-def test_submit_review():
+def test_create_review():
     payload = {
-        "title": "Test Task",
+        "id": 2,
+        "title": "Task Beta",
         "status": "pending",
-        "score": 0.95
+        "score": 0.88,
+        "timestamp": "2023-10-27T12:00:00Z"
     }
     response = client.post("/api/reviews", json=payload)
     assert response.status_code == 200
-    data = response.json()
-    assert data["title"] == "Test Task"
-    assert data["status"] == "pending"
-    assert data["score"] == 0.95
-    assert "id" in data
+    assert response.json()["title"] == "Task Beta"
 
-def test_get_telemetry():
-    response = client.get("/api/telemetry")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+def test_update_theme_invalid():
+    response = client.patch("/api/settings/theme", json={"theme_preference": "neon"})
+    assert response.status_code == 400

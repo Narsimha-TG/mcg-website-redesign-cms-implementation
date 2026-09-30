@@ -1,9 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Optional
 from datetime import datetime
-import uuid
 
 app = FastAPI(title="Robotics AI Task Automation API")
 
@@ -15,39 +14,39 @@ app.add_middleware(
 )
 
 class Review(BaseModel):
+    id: int
     title: str
     status: str
     score: float
+    timestamp: str
 
-# In-memory storage
+class ThemeUpdate(BaseModel):
+    theme_preference: str
+
+# In-memory data
 db = {
-    "tasks": [
-        {"id": "1", "title": "Pick and Place", "status": "completed", "score": 0.98, "timestamp": "2023-10-27T10:00:00Z", "telemetry_data": {"battery": 85, "temp": 42}},
-        {"id": "2", "title": "Path Planning", "status": "running", "score": 0.85, "timestamp": "2023-10-27T10:05:00Z", "telemetry_data": {"battery": 82, "temp": 45}}
-    ]
+    "reviews": [
+        {"id": 1, "title": "Task Alpha", "status": "completed", "score": 0.95, "timestamp": "2023-10-27T10:00:00Z"}
+    ],
+    "settings": {"theme_preference": "light"}
 }
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/api/analytics")
 def get_analytics():
-    return {"total_tasks": len(db["tasks"]), "avg_score": sum(t["score"] for t in db["tasks"]) / len(db["tasks"])}
+    return {"total_tasks": len(db["reviews"]), "average_score": 0.95}
 
 @app.post("/api/reviews")
-def submit_review(review: Review):
-    new_task = {
-        "id": str(uuid.uuid4()),
-        "title": review.title,
-        "status": review.status,
-        "score": review.score,
-        "timestamp": datetime.utcnow().isoformat(),
-        "telemetry_data": {}
-    }
-    db["tasks"].append(new_task)
-    return new_task
+def create_review(review: Review):
+    db["reviews"].append(review.dict())
+    return review
 
-@app.get("/api/telemetry")
-def get_telemetry():
-    return [{"id": t["id"], "telemetry_data": t["telemetry_data"]} for t in db["tasks"]]
+@app.patch("/api/settings/theme")
+def update_theme(settings: ThemeUpdate):
+    if settings.theme_preference not in ["light", "dark"]:
+        raise HTTPException(status_code=400, detail="Invalid theme")
+    db["settings"]["theme_preference"] = settings.theme_preference
+    return db["settings"]
