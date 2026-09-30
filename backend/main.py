@@ -1,25 +1,17 @@
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
-app = FastAPI(title="Hotel Review Visualization and Analysis Dashboard")
+app = FastAPI()
 
 class Review(BaseModel):
-    hotel_name: str
-    author: str
+    id: int
+    text: str
     rating: int
-    comment: str
-    date: str
 
-# In-memory storage for reviews with a default sample review
 reviews_db = [
-    {
-        "hotel_name": "Grand Hotel",
-        "author": "Alice Smith",
-        "rating": 4,
-        "comment": "Great location and friendly staff.",
-        "date": "2023-10-01"
-    }
+    {"id": 1, "text": "Great bot!", "rating": 5},
+    {"id": 2, "text": "Very fast execution.", "rating": 4}
 ]
 
 @app.get("/api/health")
@@ -32,15 +24,17 @@ def get_reviews():
 
 @app.post("/api/reviews", status_code=status.HTTP_201_CREATED, response_model=Review)
 def create_review(review: Review):
-    review_data = review.dict()
-    reviews_db.append(review_data)
-    return review_data
+    for r in reviews_db:
+        if r["id"] == review.id:
+            raise HTTPException(status_code=400, detail="Review with this ID already exists")
+    reviews_db.append(review.dict())
+    return review
 
 @app.get("/api/analytics")
 def get_analytics():
-    total_reviews = len(reviews_db)
-    average_rating = sum(r["rating"] for r in reviews_db) / total_reviews if total_reviews > 0 else 0
+    total = len(reviews_db)
+    avg_rating = sum(r["rating"] for r in reviews_db) / total if total > 0 else 0
     return {
-        "total_reviews": total_reviews,
-        "average_rating": average_rating
-    }
+        "total_reviews": total,
+        "average_rating": avg_rating
+}
