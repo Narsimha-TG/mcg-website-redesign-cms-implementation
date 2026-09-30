@@ -4,28 +4,34 @@ from main import app
 
 client = TestClient(app)
 
-def test_health_endpoint():
+def test_health_check():
     response = client.get("/api/health")
     assert response.status_code == 200
-    assert "status" in response.json()
+    assert response.json()["status"] == "healthy"
 
-def test_analytics_endpoint():
+def test_get_analytics():
     response = client.get("/api/analytics")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    data = response.json()
+    assert "total_tasks" in data
+    assert "avg_score" in data
+    assert isinstance(data["total_tasks"], int)
 
-def test_post_reviews_endpoint():
+def test_submit_review():
     payload = {
-        "id": "task-123",
-        "title": "Quality Check",
-        "status": "completed",
-        "score": 0.95,
-        "timestamp": "2023-10-27T10:00:00Z",
-        "robot_unit_id": "bot-001",
-        "task_type": "inspection",
-        "decision_confidence": 0.98,
-        "execution_time_ms": 150
+        "title": "Test Task",
+        "status": "pending",
+        "score": 0.95
     }
     response = client.post("/api/reviews", json=payload)
-    assert response.status_code in [200, 201]
-    assert response.json()["status"] == "success"
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "Test Task"
+    assert data["status"] == "pending"
+    assert data["score"] == 0.95
+    assert "id" in data
+
+def test_get_telemetry():
+    response = client.get("/api/telemetry")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
