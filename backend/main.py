@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-app = FastAPI(title="Real Estate Data Migration API")
+app = FastAPI(title="Urban Heat GIS Analysis Automation")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,38 +13,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class MigrationJob(BaseModel):
-    row_id: str
-    search_criteria: str
-    target_url: str
-    status: str = "pending"
-    error_message: Optional[str] = None
-    execution_timestamp: Optional[str] = None
+class AnalyticsData(BaseModel):
+    id: str
+    city_name: str
+    mean_surface_temp: float
+    ndvi_correlation: float
+    urban_heat_island_intensity: float
+    processing_status: str
+    timestamp: str
 
-# In-memory storage
-jobs_db = [
-    MigrationJob(row_id="1", search_criteria="Downtown Apartments", target_url="https://example.com/1"),
-    MigrationJob(row_id="2", search_criteria="Suburban Homes", target_url="https://example.com/2")
+# In-memory seed data
+DB = [
+    {"id": "1", "city_name": "Wroclaw", "mean_surface_temp": 28.5, "ndvi_correlation": -0.65, "urban_heat_island_intensity": 3.2, "processing_status": "completed", "timestamp": "2023-10-27T10:00:00Z"},
+    {"id": "2", "city_name": "Bengaluru", "mean_surface_temp": 31.2, "ndvi_correlation": -0.72, "urban_heat_island_intensity": 4.5, "processing_status": "completed", "timestamp": "2023-10-27T10:05:00Z"}
 ]
 
-@app.get("/api/v1/status")
-async def get_status():
-    total = len(jobs_db)
-    success = len([j for j in jobs_db if j.status == "success"])
-    return {
-        "progress": f"{(success/total)*100}%" if total > 0 else "0%",
-        "active_worker_count": 1,
-        "success_rate": f"{success}/{total}"
-    }
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "gee_auth": "active", "worker_status": "idle"}
 
-@app.post("/api/v1/jobs/start")
-async def start_jobs():
-    return {"message": "Migration sequence triggered", "status": "running"}
+@app.get("/api/analytics", response_model=List[AnalyticsData])
+def get_analytics():
+    return DB
 
-@app.post("/api/v1/jobs/pause")
-async def pause_jobs():
-    return {"message": "Automation process halted gracefully"}
+@app.post("/api/pipeline/trigger")
+def trigger_pipeline(city: str):
+    return {"message": f"Pipeline triggered for {city}", "task_id": "task_uuid_123"}
 
-@app.get("/api/v1/logs")
-async def get_logs():
-    return {"logs": jobs_db}
+@app.get("/api/spatial/layers")
+def get_layers():
+    return {"layers": [{"name": "LST_Raster", "url": "http://tiles.example.com/lst/{z}/{x}/{y}.png"}, {"name": "City_Boundary", "type": "GeoJSON"}]}
