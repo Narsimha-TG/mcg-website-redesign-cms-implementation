@@ -4,30 +4,29 @@ from main import app
 
 client = TestClient(app)
 
-def test_health_check():
-    response = client.get("/api/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
-
-def test_get_analytics():
-    response = client.get("/api/analytics")
+def test_get_status():
+    response = client.get("/api/v1/status")
     assert response.status_code == 200
     data = response.json()
-    assert "total_tasks" in data
-    assert "average_score" in data
-    assert isinstance(data["total_tasks"], int)
+    assert "progress" in data
+    assert "active_worker_count" in data
+    assert "success_rate" in data
 
-def test_create_review():
-    payload = {
-        "title": "Test Task",
-        "status": "pending",
-        "score": 0.95
-    }
-    response = client.post("/api/reviews", json=payload)
+def test_start_jobs():
+    response = client.post("/api/v1/jobs/start")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Migration sequence triggered", "status": "running"}
+
+def test_pause_jobs():
+    response = client.post("/api/v1/jobs/pause")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Automation process halted gracefully"}
+
+def test_get_logs():
+    response = client.get("/api/v1/logs")
     assert response.status_code == 200
     data = response.json()
-    assert data["title"] == "Test Task"
-    assert data["status"] == "pending"
-    assert data["score"] == 0.95
-    assert "id" in data
-    assert "timestamp" in data
+    assert "logs" in data
+    assert isinstance(data["logs"], list)
+    assert len(data["logs"]) > 0
+    assert "row_id" in data["logs"][0]

@@ -1,11 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
-import uuid
 
-app = FastAPI(title="Robotics AI Task Automation API")
+app = FastAPI(title="Real Estate Data Migration API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,34 +13,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Review(BaseModel):
-    id: str = None
-    title: str
-    status: str
-    score: float
-    timestamp: str = None
+class MigrationJob(BaseModel):
+    row_id: str
+    search_criteria: str
+    target_url: str
+    status: str = "pending"
+    error_message: Optional[str] = None
+    execution_timestamp: Optional[str] = None
 
-# In-memory seed data
-db = [
-    {"id": "1", "title": "Pick and Place", "status": "completed", "score": 0.98, "timestamp": "2023-10-27T10:00:00Z"},
-    {"id": "2", "title": "Path Planning", "status": "running", "score": 0.85, "timestamp": "2023-10-27T10:05:00Z"}
+# In-memory storage
+jobs_db = [
+    MigrationJob(row_id="1", search_criteria="Downtown Apartments", target_url="https://example.com/1"),
+    MigrationJob(row_id="2", search_criteria="Suburban Homes", target_url="https://example.com/2")
 ]
 
-@app.get("/api/health")
-def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+@app.get("/api/v1/status")
+async def get_status():
+    total = len(jobs_db)
+    success = len([j for j in jobs_db if j.status == "success"])
+    return {
+        "progress": f"{(success/total)*100}%" if total > 0 else "0%",
+        "active_worker_count": 1,
+        "success_rate": f"{success}/{total}"
+    }
 
-@app.get("/api/analytics")
-def get_analytics():
-    return {"total_tasks": len(db), "average_score": sum(d['score'] for d in db) / len(db) if db else 0}
+@app.post("/api/v1/jobs/start")
+async def start_jobs():
+    return {"message": "Migration sequence triggered", "status": "running"}
 
-@app.post("/api/reviews", response_model=Review)
-def create_review(review: Review):
-    review.id = str(uuid.uuid4())
-    review.timestamp = datetime.utcnow().isoformat()
-    db.append(review.dict())
-    return review
+@app.post("/api/v1/jobs/pause")
+async def pause_jobs():
+    return {"message": "Automation process halted gracefully"}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/api/v1/logs")
+async def get_logs():
+    return {"logs": jobs_db}
