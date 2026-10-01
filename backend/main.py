@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import uuid
 
-app = FastAPI(title="Automated YouTube Ad Views API")
+app = FastAPI(title="Robotics AI Task Automation API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,40 +14,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Task(BaseModel):
-    task_id: str
-    video_url: str
-    proxy_ip: Optional[str] = None
+class RobotTask(BaseModel):
+    id: str = None
+    title: str
     status: str
-    completion_score: float
-    timestamp: str
+    score: float
+    timestamp: str = None
+    confidence_level: float
+    action_taken: str
 
-# In-memory seed data
-tasks_db = [
-    {"task_id": "1", "video_url": "https://youtube.com/watch?v=1", "proxy_ip": "192.168.1.1", "status": "completed", "completion_score": 1.0, "timestamp": datetime.utcnow().isoformat()}
+# In-memory store
+db = [
+    {"id": "1", "title": "Pick and Place", "status": "completed", "score": 0.98, "timestamp": "2023-10-27T10:00:00Z", "confidence_level": 0.99, "action_taken": "move_arm_to_bin"}
 ]
 
-@app.get("/api/v1/health")
+@app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "proxy_pool": "active", "worker_nodes": 5}
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
-@app.get("/api/v1/analytics")
+@app.get("/api/analytics")
 def get_analytics():
-    return {"total_views": 1000, "success_rate": 0.98, "avg_completion": 0.95}
+    return {"total_tasks": len(db), "avg_score": sum(t['score'] for t in db) / len(db) if db else 0}
 
-@app.post("/api/v1/tasks/enqueue")
-def enqueue_task(video_url: str):
-    new_task = {
-        "task_id": str(uuid.uuid4()),
-        "video_url": video_url,
-        "proxy_ip": "dynamic",
-        "status": "queued",
-        "completion_score": 0.0,
-        "timestamp": datetime.utcnow().isoformat()
-    }
-    tasks_db.append(new_task)
-    return new_task
+@app.post("/api/reviews")
+def submit_review(task: RobotTask):
+    task.id = str(uuid.uuid4())
+    task.timestamp = datetime.utcnow().isoformat()
+    db.append(task.dict())
+    return task
 
-@app.post("/api/v1/proxy/rotate")
-def rotate_proxy():
-    return {"status": "success", "message": "Proxy pool rotated successfully"}
+@app.post("/api/robot/command")
+def execute_command(command: dict):
+    return {"status": "success", "executed": command.get("action"), "timestamp": datetime.utcnow().isoformat()}
+
+@app.websocket("/api/logs/stream")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send_json({"message": "Connected to AI Decision Stream"})
+    try:
+        while True:
+            await websocket.receive_text()
+    except Exception:
+        pass
