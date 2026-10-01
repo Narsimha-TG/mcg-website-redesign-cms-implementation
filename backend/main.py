@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-app = FastAPI(title="Urban Heat GIS Analysis Automation")
+app = FastAPI(title="Urban Heat GIS Analysis API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,33 +13,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class AnalyticsData(BaseModel):
+class UHIAnalysis(BaseModel):
     id: str
     city_name: str
-    mean_surface_temp: float
-    ndvi_correlation: float
-    urban_heat_island_intensity: float
+    lst_mean_celsius: float
+    uhi_intensity_score: float
     processing_status: str
+    satellite_source: str
     timestamp: str
 
 # In-memory seed data
-DB = [
-    {"id": "1", "city_name": "Wroclaw", "mean_surface_temp": 28.5, "ndvi_correlation": -0.65, "urban_heat_island_intensity": 3.2, "processing_status": "completed", "timestamp": "2023-10-27T10:00:00Z"},
-    {"id": "2", "city_name": "Bengaluru", "mean_surface_temp": 31.2, "ndvi_correlation": -0.72, "urban_heat_island_intensity": 4.5, "processing_status": "completed", "timestamp": "2023-10-27T10:05:00Z"}
+db = [
+    {"id": "1", "city_name": "Wroclaw", "lst_mean_celsius": 28.5, "uhi_intensity_score": 4.2, "processing_status": "completed", "satellite_source": "Landsat-8", "timestamp": "2023-10-01T12:00:00Z"},
+    {"id": "2", "city_name": "Bengaluru", "lst_mean_celsius": 32.1, "uhi_intensity_score": 6.8, "processing_status": "completed", "satellite_source": "Sentinel-2", "timestamp": "2023-10-01T12:00:00Z"}
 ]
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "gee_auth": "active", "worker_status": "idle"}
+    return {"status": "healthy", "worker_heartbeat": "active", "gee_connectivity": "connected"}
 
-@app.get("/api/analytics", response_model=List[AnalyticsData])
-def get_analytics():
-    return DB
-
-@app.post("/api/pipeline/trigger")
+@app.post("/api/pipeline/execute")
 def trigger_pipeline(city: str):
+    if city not in ["Wroclaw", "Bengaluru"]:
+        raise HTTPException(status_code=400, detail="City not supported")
     return {"message": f"Pipeline triggered for {city}", "task_id": "task_uuid_123"}
+
+@app.get("/api/analytics/uhi", response_model=List[UHIAnalysis])
+def get_analytics():
+    return db
 
 @app.get("/api/spatial/layers")
 def get_layers():
-    return {"layers": [{"name": "LST_Raster", "url": "http://tiles.example.com/lst/{z}/{x}/{y}.png"}, {"name": "City_Boundary", "type": "GeoJSON"}]}
+    return {"layers": [{"name": "uhi_contours", "type": "geojson", "url": "/data/wroclaw_uhi.json"}]}
