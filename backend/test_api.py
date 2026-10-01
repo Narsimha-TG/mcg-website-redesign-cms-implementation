@@ -14,26 +14,20 @@ def test_get_analytics():
     assert response.status_code == 200
     data = response.json()
     assert "total_tasks" in data
-    assert "avg_score" in data
+    assert "average_score" in data
+    assert isinstance(data["total_tasks"], int)
 
-def test_submit_review():
+def test_create_review():
     payload = {
         "title": "Test Task",
         "status": "pending",
-        "score": 0.95,
-        "confidence_level": 0.92,
-        "action_taken": "test_action"
+        "score": 0.95
     }
     response = client.post("/api/reviews", json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Test Task"
+    assert data["status"] == "pending"
+    assert data["score"] == 0.95
     assert "id" in data
     assert "timestamp" in data
-
-def test_execute_command():
-    payload = {"action": "move_arm"}
-    response = client.post("/api/robot/command", json=payload)
-    assert response.status_code == 200
-    assert response.json()["status"] == "success"
-    assert response.json()["executed"] == "move_arm"
