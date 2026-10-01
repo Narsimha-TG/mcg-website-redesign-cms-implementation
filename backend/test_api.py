@@ -5,25 +5,31 @@ from main import app
 client = TestClient(app)
 
 def test_health_check():
-    response = client.get("/api/v1/health")
+    response = client.get("/api/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "online"
+    assert response.json()["status"] == "healthy"
 
-def test_get_history():
-    response = client.get("/api/v1/trades/history")
+def test_get_analytics():
+    response = client.get("/api/analytics")
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
-    assert len(response.json()) > 0
+    data = response.json()
+    assert "metrics" in data
+    assert isinstance(data["metrics"], list)
 
-def test_execute_strategy():
-    payload = {"action": "toggle_on"}
-    response = client.post("/api/v1/strategy/execute", json=payload)
+def test_create_review():
+    payload = {
+        "id": 2,
+        "title": "Strategy Beta",
+        "status": "active",
+        "score": 88.0,
+        "timestamp": "2023-10-28T12:00:00Z"
+    }
+    response = client.post("/api/reviews", json=payload)
     assert response.status_code == 200
-    assert response.json()["status"] == "success"
+    assert response.json() == payload
 
-def test_update_config():
-    payload = {"risk_limit": 0.05, "strategy_enabled": True}
-    response = client.post("/api/v1/config/update", json=payload)
+def test_update_theme():
+    payload = {"theme_preference": "light"}
+    response = client.patch("/api/ui/theme", json=payload)
     assert response.status_code == 200
-    assert response.json()["new_config"]["risk_limit"] == 0.05
-    assert response.json()["new_config"]["strategy_enabled"] is True
+    assert response.json()["theme_preference"] == "light"

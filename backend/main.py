@@ -13,41 +13,40 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Trade(BaseModel):
-    trade_id: str
-    symbol: str
-    pattern_type: str
-    entry_price: float
-    exit_price: float
-    timestamp: str
-    pnl_impact: float
+class Review(BaseModel):
+    id: int
+    title: str
     status: str
+    score: float
+    timestamp: str
 
-class ConfigUpdate(BaseModel):
-    risk_limit: float
-    strategy_enabled: bool
+class ThemeUpdate(BaseModel):
+    theme_preference: str
 
-# In-memory seed data
-trade_db = [
-    Trade(trade_id="T1", symbol="BTC/USD", pattern_type="Bullish Engulfing", entry_price=50000.0, exit_price=51000.0, timestamp=datetime.utcnow().isoformat(), pnl_impact=1000.0, status="closed")
-]
+# In-memory data
+db = {
+    "reviews": [{"id": 1, "title": "Strategy Alpha", "status": "active", "score": 95.5, "timestamp": "2023-10-27T10:00:00Z"}],
+    "settings": {"theme_preference": "dark"}
+}
 
-@app.get("/api/v1/health")
+@app.get("/api/health")
 def health_check():
-    return {"status": "online", "latency_ms": 2}
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
-@app.get("/api/v1/market-data/stream")
-def get_market_data():
-    return {"message": "WebSocket connection established", "stream_url": "ws://localhost:8000/ws/market"}
+@app.get("/api/analytics")
+def get_analytics():
+    return {"metrics": db["reviews"], "count": len(db["reviews"])}
 
-@app.post("/api/v1/strategy/execute")
-def execute_strategy(action: dict):
-    return {"status": "success", "action_received": action}
+@app.post("/api/reviews")
+def create_review(review: Review):
+    db["reviews"].append(review.dict())
+    return review
 
-@app.get("/api/v1/trades/history", response_model=List[Trade])
-def get_history():
-    return trade_db
+@app.patch("/api/ui/theme")
+def update_theme(theme: ThemeUpdate):
+    db["settings"]["theme_preference"] = theme.theme_preference
+    return db["settings"]
 
-@app.post("/api/v1/config/update")
-def update_config(config: ConfigUpdate):
-    return {"status": "updated", "new_config": config.dict()}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -7,37 +7,45 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <title>Engulfing Strategy Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' };
+    </script>
 </head>
-<body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans min-h-screen p-4 md:p-8 transition-colors duration-300">
     <div class="max-w-7xl mx-auto">
-        <header class="mb-8 border-b border-slate-800 pb-6 flex justify-between items-center">
+        <header class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white">Engulfing Strategy Engine</h1>
-                <p class="text-emerald-500">1-Minute Timeframe | Active Pattern Recognition</p>
+                <h1 class="text-3xl font-bold tracking-tight">Engulfing Strategy Engine</h1>
+                <p class="text-emerald-600 dark:text-emerald-500">1-Minute Timeframe | Active Pattern Recognition</p>
             </div>
-            <button id="kill-switch" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition">EMERGENCY KILL SWITCH</button>
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                    Toggle Theme
+                </button>
+                <button id="kill-switch" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition">EMERGENCY KILL SWITCH</button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="lg:col-span-3 space-y-6">
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Engulfing Pattern Log</h2>
+                <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Engulfing Pattern Log</h2>
                     <div id="trade-log" class="h-64 overflow-y-auto font-mono text-sm space-y-2">
-                        <div class="text-emerald-400">[10:01:02] Bullish Engulfing detected on BTC/USD. Entry: 64200.50</div>
-                        <div class="text-rose-400">[09:58:15] Bearish Engulfing detected on ETH/USD. Entry: 3450.20</div>
-                        <div class="text-emerald-400">[09:55:40] Bullish Engulfing detected on SOL/USD. Entry: 145.80</div>
+                        <div class="text-emerald-600 dark:text-emerald-400">[10:01:02] Bullish Engulfing detected on BTC/USD. Entry: 64200.50</div>
+                        <div class="text-rose-600 dark:text-rose-400">[09:58:15] Bearish Engulfing detected on ETH/USD. Entry: 3450.20</div>
+                        <div class="text-emerald-600 dark:text-emerald-400">[09:55:40] Bullish Engulfing detected on SOL/USD. Entry: 145.80</div>
                         <div class="text-slate-500">[09:50:00] System initialized. Monitoring 1m candles...</div>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">System Health</h2>
-                    <div id="health-status" class="font-mono text-xs text-emerald-400">🟢 Operational (Standby Demo)</div>
+                <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">System Health</h2>
+                    <div id="health-status" class="font-mono text-xs text-emerald-600 dark:text-emerald-400">🟢 Operational (Standby Demo)</div>
                 </div>
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Strategy Control</h2>
+                <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Strategy Control</h2>
                     <button onclick="toggleStrategy()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition">Toggle Auto-Trading</button>
                 </div>
             </div>
@@ -45,22 +53,27 @@
     </div>
 
     <script>
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            fetch('/api/ui/theme', { method: 'PATCH', body: JSON.stringify({ theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }) }).catch(() => {});
+        });
+
         async function toggleStrategy() {
             try {
-                const res = await fetch('/api/v1/strategy/execute', { method: 'POST', body: JSON.stringify({ active: true }) });
+                await fetch('/api/reviews', { method: 'POST', body: JSON.stringify({ action: 'toggle_strategy' }) });
                 alert('Strategy state updated');
             } catch (e) {
                 console.warn('Demo mode: Strategy toggle simulated.');
             }
         }
         
-        fetch('/api/v1/health')
+        fetch('/api/health')
             .then(r => r.json())
-            .then(d => document.getElementById('health-status').innerText = JSON.stringify(d, null, 2))
+            .then(d => document.getElementById('health-status').innerText = '🟢 ' + d.status)
             .catch(() => document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)');
 
         document.getElementById('kill-switch').addEventListener('click', () => {
-            fetch('/api/v1/strategy/execute', { method: 'POST', body: JSON.stringify({ action: 'KILL_ALL' }) });
+            fetch('/api/reviews', { method: 'POST', body: JSON.stringify({ action: 'KILL_ALL' }) });
         });
     </script>
 </body>
