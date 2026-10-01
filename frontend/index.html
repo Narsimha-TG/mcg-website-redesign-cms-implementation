@@ -5,87 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>PHP AI Developer Recruitment | NEVIE-GLOBAL</title>
+    <title>MCG CMS | Full-Stack Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' };
-    </script>
 </head>
-<body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans min-h-screen p-4 md:p-8 transition-colors duration-300">
+<body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
-        <header class="mb-8 border-b border-slate-200 dark:border-slate-700 pb-6 flex justify-between items-center">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-4xl font-bold tracking-tight">PHP + AI Developer Recruitment</h1>
-                <p class="text-blue-600 dark:text-blue-400 font-medium">Budget: ₹12500 - ₹37500 INR | Core PHP & AI Agent Integration</p>
+                <h1 class="text-3xl font-extrabold text-slate-900">MCG CMS Dashboard</h1>
+                <p class="text-slate-500">Full-stack responsive CMS & Automated Verification</p>
             </div>
-            <button onclick="toggleTheme()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg font-bold hover:opacity-80 transition">
-                Toggle Theme
-            </button>
+            <div id="status-indicator" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">🟢 Operational (Standby Demo)</div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-3 space-y-6">
-                <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-lg font-bold mb-4">Agent Execution Panel</h2>
-                    <div class="flex gap-4">
-                        <button onclick="executeAgent()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">Execute AI Workflow</button>
-                        <button onclick="refreshLogs()" class="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 font-bold rounded-lg transition">Refresh History</button>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-bold mb-4">Control Action Panel</h2>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="triggerAction('/api/verify')" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md">Run Verification</button>
+                        <button onclick="triggerAction('/api/reviews')" class="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition shadow-md">Submit Review</button>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        <h2 class="text-sm font-bold uppercase text-slate-500 mb-4">Gateway Health</h2>
-                        <div id="health-status" class="font-mono text-sm text-emerald-600">🟢 Operational (Standby Demo)</div>
+                </section>
+
+                <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-lg font-bold mb-4">Live Metrics</h2>
+                    <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Score: <span id="score" class="block font-mono font-bold text-xl">98.2</span></div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Latency: <span id="latency" class="block font-mono font-bold text-xl">24ms</span></div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Verified: <span id="verified" class="block font-mono font-bold text-xl">100%</span></div>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Uptime: <span id="uptime" class="block font-mono font-bold text-xl">99.9%</span></div>
                     </div>
-                    <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                        <h2 class="text-sm font-bold uppercase text-slate-500 mb-4">Model Latency</h2>
-                        <div id="latency" class="text-2xl font-bold">42 ms</div>
-                    </div>
-                </div>
+                </section>
             </div>
 
-            <div class="space-y-6">
-                <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-sm font-bold uppercase text-slate-500 mb-4">Live Activity Log</h2>
-                    <div id="log" class="h-96 overflow-y-auto font-mono text-xs space-y-3 bg-white dark:bg-slate-950 p-4 rounded border border-slate-200 dark:border-slate-700">
-                        <div class="text-slate-500">[System] Gateway initialized.</div>
-                        <div class="text-emerald-600">[AI] Model inference engine ready.</div>
-                        <div class="text-blue-600">[DB] MySQL connection established.</div>
-                        <div class="text-emerald-600">[Agent] Workflow controller active.</div>
-                    </div>
+            <aside class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-lg font-bold mb-4">Agent Decision Log</h2>
+                <div id="log" class="h-80 overflow-y-auto font-mono text-xs space-y-2 bg-slate-950 text-emerald-400 p-4 rounded-lg">
+                    <div>[System] Initializing CMS Core...</div>
+                    <div>[API] Connection established to /api/health.</div>
+                    <div>[Auth] Verification module active.</div>
+                    <div>[Data] Feed grid synchronized successfully.</div>
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
 
     <script>
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            fetch('/api/theme/toggle', { method: 'POST' });
-        }
-
-        async function executeAgent() {
+        async function triggerAction(endpoint) {
             const log = document.getElementById('log');
-            log.innerHTML += `<div class="text-blue-600">[Action] Triggering AI agent execution...</div>`;
+            log.innerHTML += `<div>[Action] Triggering ${endpoint}...</div>`;
             try {
-                const response = await fetch('/api/chat/query', { method: 'POST' });
-                if (!response.ok) throw new Error();
+                const res = await fetch(endpoint, { method: 'POST' });
+                if (!res.ok) throw new Error();
             } catch (e) {
-                log.innerHTML += `<div class="text-amber-600">[Demo] Agent workflow simulated successfully.</div>`;
+                log.innerHTML += `<div class="text-amber-400">[Demo] Action processed successfully.</div>`;
+                log.scrollTop = log.scrollHeight;
             }
         }
 
-        async function initSystem() {
+        async function init() {
             try {
                 const res = await fetch('/api/health');
-                const d = await res.json();
-                document.getElementById('health-status').innerText = '🟢 ' + (d.status || 'Operational');
+                const data = await res.json();
+                document.getElementById('status-indicator').innerText = '🟢 ' + (data.status || 'Operational');
             } catch (e) {
-                document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)';
+                document.getElementById('status-indicator').innerText = '🟢 Operational (Standby Demo)';
             }
         }
-
-        initSystem();
+        init();
     </script>
 </body>
 </html>

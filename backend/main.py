@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-app = FastAPI()
+app = FastAPI(title="MCG Website Redesign API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,37 +13,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class UserTheme(BaseModel):
-    user_id: int
-    theme_preference: str
+class ContentItem(BaseModel):
+    id: str
+    title: str
+    status: str
+    score: float
+    timestamp: str
+    verification_result: Optional[str] = None
+    metadata: dict = {}
 
-class ChatQuery(BaseModel):
-    user_id: int
-    message: str
-
-# In-memory store
+# In-memory seed data
 db = [
-    {"id": 1, "user_id": 101, "theme_preference": "light", "ai_response_payload": "Hello!", "created_at": datetime.now().isoformat()}
+    ContentItem(id="1", title="Homepage Hero", status="published", score=95.5, timestamp=datetime.now().isoformat()),
+    ContentItem(id="2", title="About Us", status="draft", score=88.0, timestamp=datetime.now().isoformat())
 ]
 
 @app.get("/api/health")
 def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
-@app.post("/api/theme/toggle")
-def toggle_theme(data: UserTheme):
-    for record in db:
-        if record["user_id"] == data.user_id:
-            record["theme_preference"] = data.theme_preference
-            return {"status": "success", "new_theme": data.theme_preference}
-    return {"status": "error", "message": "User not found"}
+@app.get("/api/analytics")
+def get_analytics():
+    return {"total_items": len(db), "average_score": sum(i.score for i in db) / len(db) if db else 0}
 
-@app.post("/api/chat/query")
-def chat_query(query: ChatQuery):
-    # Mock AI integration
-    response = f"AI processed: {query.message}"
-    return {"user_id": query.user_id, "ai_response_payload": response}
+@app.post("/api/reviews")
+def submit_review(item: ContentItem):
+    db.append(item)
+    return {"message": "Review submitted successfully", "id": item.id}
 
-@app.get("/api/data/fetch")
-def fetch_data():
-    return {"data": db}
+@app.post("/api/verify")
+def trigger_verification(item_id: str):
+    for item in db:
+        if item.id == item_id:
+            item.verification_result = "Verified"
+            return {"status": "success", "item_id": item_id}
+    raise HTTPException(status_code=404, detail="Item not found")
+
+@app.get("/api/content", response_model=List[ContentItem])
+def get_content():
+    return db
