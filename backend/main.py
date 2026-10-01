@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
-app = FastAPI(title="Algo Trade Automation API")
+app = FastAPI(title="E-commerce SaaS API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,40 +13,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Review(BaseModel):
-    id: int
-    title: str
+class UserProfile(BaseModel):
+    id: str
+    user_id: str
     status: str
-    score: float
-    timestamp: str
+    created_at: datetime
 
-class ThemeUpdate(BaseModel):
-    theme_preference: str
+# In-memory seed data
+users = {"user_123": {"id": "1", "user_id": "user_123", "status": "active", "created_at": datetime.now()}}
 
-# In-memory data
-db = {
-    "reviews": [{"id": 1, "title": "Strategy Alpha", "status": "active", "score": 95.5, "timestamp": "2023-10-27T10:00:00Z"}],
-    "settings": {"theme_preference": "dark"}
-}
-
-@app.get("/api/health")
+@app.get("/api/v1/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "ok", "timestamp": datetime.now()}
 
-@app.get("/api/analytics")
+@app.post("/api/v1/auth/login")
+def login(credentials: dict):
+    return {"token": "mock-jwt-token", "user_id": "user_123"}
+
+@app.get("/api/v1/analytics/data")
 def get_analytics():
-    return {"metrics": db["reviews"], "count": len(db["reviews"])}
+    return {"metrics": [{"source": "api_v1", "value": 100}, {"source": "api_v2", "value": 250}]}
 
-@app.post("/api/reviews")
-def create_review(review: Review):
-    db["reviews"].append(review.dict())
-    return review
+@app.post("/api/v1/subscriptions/checkout")
+def create_checkout(data: dict):
+    return {"session_id": "cs_test_123", "url": "https://checkout.stripe.com/pay/123"}
 
-@app.patch("/api/ui/theme")
-def update_theme(theme: ThemeUpdate):
-    db["settings"]["theme_preference"] = theme.theme_preference
-    return db["settings"]
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/api/v1/user/profile")
+def get_profile():
+    return users.get("user_123")

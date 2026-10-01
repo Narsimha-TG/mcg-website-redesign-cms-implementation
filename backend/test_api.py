@@ -5,31 +5,25 @@ from main import app
 client = TestClient(app)
 
 def test_health_check():
-    response = client.get("/api/health")
+    response = client.get("/api/v1/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+    assert response.json()["status"] == "ok"
 
 def test_get_analytics():
-    response = client.get("/api/analytics")
+    response = client.get("/api/v1/analytics/data")
     assert response.status_code == 200
-    data = response.json()
-    assert "metrics" in data
-    assert isinstance(data["metrics"], list)
+    assert "metrics" in response.json()
+    assert len(response.json()["metrics"]) > 0
 
-def test_create_review():
-    payload = {
-        "id": 2,
-        "title": "Strategy Beta",
-        "status": "active",
-        "score": 88.0,
-        "timestamp": "2023-10-28T12:00:00Z"
-    }
-    response = client.post("/api/reviews", json=payload)
+def test_create_checkout():
+    payload = {"price_id": "price_123", "quantity": 1}
+    response = client.post("/api/v1/subscriptions/checkout", json=payload)
     assert response.status_code == 200
-    assert response.json() == payload
+    assert "session_id" in response.json()
+    assert response.json()["session_id"] == "cs_test_123"
 
-def test_update_theme():
-    payload = {"theme_preference": "light"}
-    response = client.patch("/api/ui/theme", json=payload)
+def test_login():
+    payload = {"username": "testuser", "password": "password123"}
+    response = client.post("/api/v1/auth/login", json=payload)
     assert response.status_code == 200
-    assert response.json()["theme_preference"] == "light"
+    assert "token" in response.json()
