@@ -5,52 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>AI Task Automation Engineer | Voice Agent Dashboard</title>
+    <title>Robinhood Day-Trading Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .high-contrast-text { color: #ffffff !important; text-shadow: 0 0 1px rgba(255,255,255,0.5); }
-        .bg-panel { background-color: #1e293b; }
-    </style>
 </head>
 <body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-8 border-b border-slate-700 pb-6">
-            <h1 class="text-3xl font-bold tracking-tight text-white">AI Task Automation Engine</h1>
-            <p class="text-slate-300">Voice-Driven Agentic Workflow Control</p>
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 border-b border-slate-800 pb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">Trading Automation Engine</h1>
+                <p class="text-emerald-500">Live: U.S. Equities Market Watch</p>
+            </div>
+            <button id="kill-switch" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition">EMERGENCY KILL SWITCH</button>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-700">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Voice Waveform Visualization</h2>
-                    <div id="waveform" class="h-32 bg-black rounded border border-slate-700 flex items-center justify-center text-slate-500">[Real-time Audio Stream]</div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-3 space-y-6">
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Live Ticker Feed</h2>
+                    <div id="ticker-feed" class="h-64 overflow-y-auto font-mono text-sm text-emerald-400"></div>
                 </div>
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-700">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Agent Decision Log</h2>
-                    <div id="log-feed" class="h-64 overflow-y-auto font-mono text-sm text-emerald-400 space-y-2"></div>
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Strategy Performance</h2>
+                    <div id="perf-dashboard" class="h-48 flex items-center justify-center text-slate-600">[Performance Metrics Visualization]</div>
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-700">
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">System Health</h2>
-                    <div id="health-metrics" class="space-y-2 font-mono text-sm text-white">Checking /api/health...</div>
+                    <div id="health-status" class="font-mono text-xs text-slate-300">Checking /api/v1/health...</div>
                 </div>
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-700">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Task Control</h2>
-                    <button onclick="executeTask()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition shadow-lg">Trigger Execution</button>
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Strategy Control</h2>
+                    <button onclick="toggleStrategy()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition">Toggle Auto-Trading</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function executeTask() {
-            const res = await fetch('/api/reviews', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'trigger' }) });
-            console.log('Task Triggered');
+        async function toggleStrategy() {
+            const res = await fetch('/api/v1/strategy/toggle', { method: 'POST' });
+            alert('Strategy state updated');
         }
-        fetch('/api/health').then(r => r.json()).then(d => document.getElementById('health-metrics').innerText = JSON.stringify(d, null, 2));
-        fetch('/api/analytics').then(r => r.json()).then(d => console.log('Analytics Loaded', d));
+        
+        fetch('/api/v1/health').then(r => r.json()).then(d => {
+            document.getElementById('health-status').innerText = JSON.stringify(d, null, 2);
+        });
+
+        document.getElementById('kill-switch').addEventListener('click', () => {
+            fetch('/api/v1/orders', { method: 'POST', body: JSON.stringify({ action: 'KILL_ALL' }) });
+        });
     </script>
 </body>
 </html>
