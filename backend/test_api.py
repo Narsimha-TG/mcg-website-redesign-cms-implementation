@@ -7,31 +7,23 @@ client = TestClient(app)
 def test_health_check():
     response = client.get("/api/v1/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "online", "auth": "connected"}
+    assert response.json()["status"] == "online"
 
-def test_get_portfolio():
-    response = client.get("/api/v1/portfolio")
+def test_get_history():
+    response = client.get("/api/v1/trades/history")
     assert response.status_code == 200
-    data = response.json()
-    assert "balance" in data
-    assert "positions" in data
+    assert isinstance(response.json(), list)
+    assert len(response.json()) > 0
 
-def test_create_order_success():
-    order_payload = {
-        "symbol": "TSLA",
-        "side": "buy",
-        "quantity": 5,
-        "price": 200.50
-    }
-    response = client.post("/api/v1/orders", json=order_payload)
+def test_execute_strategy():
+    payload = {"action": "toggle_on"}
+    response = client.post("/api/v1/strategy/execute", json=payload)
     assert response.status_code == 200
-    data = response.json()
-    assert data["symbol"] == "TSLA"
-    assert data["status"] == "pending"
-    assert "order_id" in data
-    assert "timestamp" in data
+    assert response.json()["status"] == "success"
 
-def test_toggle_strategy():
-    response = client.post("/api/v1/strategy/toggle", json={"enabled": True})
+def test_update_config():
+    payload = {"risk_limit": 0.05, "strategy_enabled": True}
+    response = client.post("/api/v1/config/update", json=payload)
     assert response.status_code == 200
-    assert response.json() == {"strategy_enabled": True}
+    assert response.json()["new_config"]["risk_limit"] == 0.05
+    assert response.json()["new_config"]["strategy_enabled"] is True

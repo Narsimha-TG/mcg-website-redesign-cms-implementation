@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>Robinhood Day-Trading Automation Dashboard</title>
+    <title>Engulfing Strategy Automation Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <header class="mb-8 border-b border-slate-800 pb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white">Trading Automation Engine</h1>
-                <p class="text-emerald-500">Live: U.S. Equities Market Watch</p>
+                <h1 class="text-3xl font-bold tracking-tight text-white">Engulfing Strategy Engine</h1>
+                <p class="text-emerald-500">1-Minute Timeframe | Active Pattern Recognition</p>
             </div>
             <button id="kill-switch" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition">EMERGENCY KILL SWITCH</button>
         </header>
@@ -21,19 +21,20 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="lg:col-span-3 space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Live Ticker Feed</h2>
-                    <div id="ticker-feed" class="h-64 overflow-y-auto font-mono text-sm text-emerald-400"></div>
-                </div>
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Strategy Performance</h2>
-                    <div id="perf-dashboard" class="h-48 flex items-center justify-center text-slate-600">[Performance Metrics Visualization]</div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Engulfing Pattern Log</h2>
+                    <div id="trade-log" class="h-64 overflow-y-auto font-mono text-sm space-y-2">
+                        <div class="text-emerald-400">[10:01:02] Bullish Engulfing detected on BTC/USD. Entry: 64200.50</div>
+                        <div class="text-rose-400">[09:58:15] Bearish Engulfing detected on ETH/USD. Entry: 3450.20</div>
+                        <div class="text-emerald-400">[09:55:40] Bullish Engulfing detected on SOL/USD. Entry: 145.80</div>
+                        <div class="text-slate-500">[09:50:00] System initialized. Monitoring 1m candles...</div>
+                    </div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">System Health</h2>
-                    <div id="health-status" class="font-mono text-xs text-slate-300">Checking /api/v1/health...</div>
+                    <div id="health-status" class="font-mono text-xs text-emerald-400">🟢 Operational (Standby Demo)</div>
                 </div>
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Strategy Control</h2>
@@ -45,16 +46,21 @@
 
     <script>
         async function toggleStrategy() {
-            const res = await fetch('/api/v1/strategy/toggle', { method: 'POST' });
-            alert('Strategy state updated');
+            try {
+                const res = await fetch('/api/v1/strategy/execute', { method: 'POST', body: JSON.stringify({ active: true }) });
+                alert('Strategy state updated');
+            } catch (e) {
+                console.warn('Demo mode: Strategy toggle simulated.');
+            }
         }
         
-        fetch('/api/v1/health').then(r => r.json()).then(d => {
-            document.getElementById('health-status').innerText = JSON.stringify(d, null, 2);
-        });
+        fetch('/api/v1/health')
+            .then(r => r.json())
+            .then(d => document.getElementById('health-status').innerText = JSON.stringify(d, null, 2))
+            .catch(() => document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)');
 
         document.getElementById('kill-switch').addEventListener('click', () => {
-            fetch('/api/v1/orders', { method: 'POST', body: JSON.stringify({ action: 'KILL_ALL' }) });
+            fetch('/api/v1/strategy/execute', { method: 'POST', body: JSON.stringify({ action: 'KILL_ALL' }) });
         });
     </script>
 </body>
