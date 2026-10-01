@@ -5,35 +5,35 @@ from main import app
 client = TestClient(app)
 
 def test_health_check():
-    response = client.get("/api/health")
-    assert response.status_code == 200
-    assert "status" in response.json()
-    assert response.json()["status"] == "healthy"
-
-def test_get_analytics():
-    response = client.get("/api/analytics")
+    response = client.get("/api/v1/health")
     assert response.status_code == 200
     data = response.json()
-    assert "total_leads" in data
-    assert "avg_score" in data
+    assert data["status"] == "healthy"
+    assert data["db_connectivity"] == "connected"
 
-def test_submit_review():
-    payload = {"rating": 5, "comment": "Great service"}
-    response = client.post("/api/reviews", json=payload)
+def test_get_analytics():
+    response = client.get("/api/v1/analytics/summary")
     assert response.status_code == 200
-    assert response.json()["status"] == "success"
+    data = response.json()
+    assert "discovery_rate" in data
+    assert "avg_quality_score" in data
+    assert data["total_resources"] >= 0
 
-def test_capture_lead():
-    new_lead = {
-        "id": "2",
-        "title": "Global Solutions",
-        "status": "pending",
-        "score": 92.0,
-        "timestamp": "2023-10-28T12:00:00Z",
-        "lead_source": "email",
-        "conversion_probability": 0.88
-    }
-    response = client.post("/api/leads/capture", json=new_lead)
+def test_trigger_task():
+    payload = {"workflow_type": "scraping"}
+    response = client.post("/api/v1/tasks/trigger", params=payload)
     assert response.status_code == 200
-    assert response.json()["status"] == "created"
-    assert response.json()["id"] == "2"
+    data = response.json()
+    assert "task_id" in data
+    assert "triggered successfully" in data["message"]
+
+def test_get_resources_schema():
+    response = client.get("/api/v1/resources")
+    assert response.status_code == 200
+    resources = response.json()
+    assert isinstance(resources, list)
+    if len(resources) > 0:
+        keys = resources[0].keys()
+        expected_fields = ["id", "source_url", "resource_title", "category", "tech_stack_tags", "confidence_score", "embedding_vector", "created_at", "last_updated"]
+        for field in expected_fields:
+            assert field in keys

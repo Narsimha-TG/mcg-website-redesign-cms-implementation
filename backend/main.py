@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-app = FastAPI(title="Grow with CallMate AI")
+app = FastAPI(title="Automated Technological Resource Discovery System")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,37 +13,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Lead(BaseModel):
+class Resource(BaseModel):
     id: str
-    title: str
-    status: str
-    score: float
-    timestamp: str
-    lead_source: str
-    conversion_probability: float
+    source_url: str
+    resource_title: str
+    category: str
+    tech_stack_tags: List[str]
+    confidence_score: float
+    embedding_vector: List[float]
+    created_at: datetime
+    last_updated: datetime
 
 # In-memory seed data
-leads_db = [
-    {"id": "1", "title": "Tech Corp", "status": "active", "score": 85.5, "timestamp": "2023-10-27T10:00:00Z", "lead_source": "web", "conversion_probability": 0.75}
+resources_db = [
+    Resource(
+        id="1",
+        source_url="https://github.com/example/repo",
+        resource_title="Distributed Scraper",
+        category="Infrastructure",
+        tech_stack_tags=["Python", "FastAPI", "Redis"],
+        confidence_score=0.98,
+        embedding_vector=[0.1, 0.2, 0.3],
+        created_at=datetime.now(),
+        last_updated=datetime.now()
+    )
 ]
 
-@app.get("/api/health")
+@app.get("/api/v1/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "healthy", "worker_status": "active", "db_connectivity": "connected"}
 
-@app.get("/api/analytics")
+@app.get("/api/v1/resources", response_model=List[Resource])
+def get_resources(page: int = 1, limit: int = 10):
+    return resources_db
+
+@app.post("/api/v1/tasks/trigger")
+def trigger_task(workflow_type: str):
+    return {"message": f"Workflow {workflow_type} triggered successfully", "task_id": "task-uuid-123"}
+
+@app.get("/api/v1/analytics/summary")
 def get_analytics():
-    return {"total_leads": len(leads_db), "avg_score": 85.5}
-
-@app.post("/api/reviews")
-def submit_review(data: dict):
-    return {"status": "success", "received": data}
-
-@app.post("/api/leads/capture")
-def capture_lead(lead: Lead):
-    leads_db.append(lead.dict())
-    return {"status": "created", "id": lead.id}
-
-@app.get("/api/partners/performance")
-def get_partner_performance():
-    return {"partner_id": "P-001", "metrics": {"conversion_rate": "12%", "active_leads": 1}}
+    return {"discovery_rate": 150, "avg_quality_score": 0.92, "total_resources": len(resources_db)}

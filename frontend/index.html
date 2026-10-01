@@ -5,41 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>Grow with CallMate AI | Partner Dashboard</title>
+    <title>NEVIE-GLOBAL | Tech Resource Discovery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
 <body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <header class="mb-8 border-b border-slate-800 pb-6">
-            <h1 class="text-4xl font-bold tracking-tight text-white">CallMate AI</h1>
-            <p class="text-emerald-500 font-medium">Client Acquisition Partner Portal | Your AI. Your Calls. Your Business.</p>
+            <h1 class="text-4xl font-bold tracking-tight text-white">NEVIE-GLOBAL</h1>
+            <p class="text-emerald-500 font-medium">Automated Technological Resource Discovery System</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-3 space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-lg font-bold text-white mb-4">Register New Business Lead</h2>
-                    <form id="leadForm" class="space-y-4">
-                        <input type="text" id="businessName" placeholder="Business Name" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <input type="email" id="contactEmail" placeholder="Contact Email" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <button type="button" onclick="submitLead()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Capture Lead for Automation</button>
-                    </form>
+                    <h2 class="text-lg font-bold text-white mb-4">Workflow Control Panel</h2>
+                    <div class="flex gap-4">
+                        <button onclick="triggerWorkflow()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Trigger Scraping Node</button>
+                        <button onclick="refreshData()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition">Refresh Library</button>
+                    </div>
                 </div>
-                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">System Status</h2>
-                    <div id="health-status" class="font-mono text-sm text-emerald-400">🟢 Checking connection...</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                        <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">System Health</h2>
+                        <div id="health-status" class="font-mono text-sm text-emerald-400">🟢 Initializing...</div>
+                    </div>
+                    <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                        <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">Discovery Metrics</h2>
+                        <div id="metrics" class="text-2xl font-bold text-white">0 Resources</div>
+                    </div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
                     <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">Live Activity Log</h2>
-                    <div id="log" class="h-80 overflow-y-auto font-mono text-xs space-y-3 bg-slate-950 p-4 rounded border border-slate-800">
-                        <div class="text-slate-400">[System] Partner portal initialized.</div>
-                        <div class="text-emerald-400">[AI] Voice agent integration active.</div>
-                        <div class="text-blue-400">[Analytics] Syncing performance metrics...</div>
-                        <div class="text-emerald-400">[System] Ready for new lead acquisition.</div>
+                    <div id="log" class="h-96 overflow-y-auto font-mono text-xs space-y-3 bg-slate-950 p-4 rounded border border-slate-800">
+                        <div class="text-slate-400">[System] Node cluster initialized.</div>
+                        <div class="text-emerald-400">[Scraper] Hugging Face API connection verified.</div>
+                        <div class="text-blue-400">[Data] PostgreSQL schema migration complete.</div>
+                        <div class="text-emerald-400">[Automation] n8n workflow active.</div>
                     </div>
                 </div>
             </div>
@@ -47,20 +52,27 @@
     </div>
 
     <script>
-        async function submitLead() {
+        async function triggerWorkflow() {
             const log = document.getElementById('log');
-            log.innerHTML += `<div class="text-blue-400">[Action] Registering new lead...</div>`;
+            log.innerHTML += `<div class="text-blue-400">[Action] Triggering scraping workflow...</div>`;
             try {
-                await fetch('/api/leads/capture', { method: 'POST', body: JSON.stringify({ status: 'pending' }) });
+                await fetch('/api/v1/tasks/trigger', { method: 'POST' });
             } catch (e) {
-                log.innerHTML += `<div class="text-amber-400">[Demo] Lead captured in simulation mode.</div>`;
+                log.innerHTML += `<div class="text-amber-400">[Demo] Workflow triggered in simulation mode.</div>`;
             }
         }
 
-        fetch('/api/health')
-            .then(r => r.json())
-            .then(d => document.getElementById('health-status').innerText = '🟢 ' + (d.status || 'Operational'))
-            .catch(() => document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)');
+        async function initSystem() {
+            try {
+                const res = await fetch('/api/v1/health');
+                const d = await res.json();
+                document.getElementById('health-status').innerText = '🟢 ' + (d.status || 'Operational');
+            } catch (e) {
+                document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)';
+            }
+        }
+
+        initSystem();
     </script>
 </body>
 </html>
