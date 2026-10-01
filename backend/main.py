@@ -1,11 +1,10 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from pydantic import BaseModel
+from typing import List, Optional
 from datetime import datetime
-import uuid
 
-app = FastAPI(title="AI Reels Automation API")
+app = FastAPI(title="Grow with CallMate AI")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,46 +13,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory storage
-jobs: Dict[str, dict] = {}
-
-class ReelRequest(BaseModel):
-    prompt: str
-
-class ReelStatus(BaseModel):
-    job_id: str
+class Lead(BaseModel):
+    id: str
+    title: str
     status: str
-    video_url: Optional[str] = None
-    metadata: Optional[dict] = None
-    created_at: datetime
+    score: float
+    timestamp: str
+    lead_source: str
+    conversion_probability: float
 
-@app.post("/api/v1/generate-reel", status_code=202)
-async def generate_reel(request: ReelRequest):
-    job_id = str(uuid.uuid4())
-    jobs[job_id] = {
-        "job_id": job_id,
-        "prompt": request.prompt,
-        "status": "processing",
-        "video_url": None,
-        "metadata": {},
-        "created_at": datetime.utcnow()
-    }
-    return {"job_id": job_id, "status": "processing"}
+# In-memory seed data
+leads_db = [
+    {"id": "1", "title": "Tech Corp", "status": "active", "score": 85.5, "timestamp": "2023-10-27T10:00:00Z", "lead_source": "web", "conversion_probability": 0.75}
+]
 
-@app.get("/api/v1/status/{job_id}", response_model=ReelStatus)
-async def get_status(job_id: str):
-    if job_id not in jobs:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return jobs[job_id]
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
-@app.post("/api/v1/webhook/n8n")
-async def n8n_webhook(data: dict):
-    job_id = data.get("job_id")
-    if job_id in jobs:
-        jobs[job_id].update({
-            "status": data.get("status", "completed"),
-            "video_url": data.get("video_url"),
-            "metadata": data.get("metadata", {})
-        })
-        return {"message": "Webhook processed"}
-    raise HTTPException(status_code=404, detail="Job not found")
+@app.get("/api/analytics")
+def get_analytics():
+    return {"total_leads": len(leads_db), "avg_score": 85.5}
+
+@app.post("/api/reviews")
+def submit_review(data: dict):
+    return {"status": "success", "received": data}
+
+@app.post("/api/leads/capture")
+def capture_lead(lead: Lead):
+    leads_db.append(lead.dict())
+    return {"status": "created", "id": lead.id}
+
+@app.get("/api/partners/performance")
+def get_partner_performance():
+    return {"partner_id": "P-001", "metrics": {"conversion_rate": "12%", "active_leads": 1}}

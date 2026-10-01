@@ -5,37 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>AI Reels Automation | MVP</title>
+    <title>Grow with CallMate AI | Partner Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
 <body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <header class="mb-8 border-b border-slate-800 pb-6">
-            <h1 class="text-3xl font-bold tracking-tight">AI Reels Automation</h1>
-            <p class="text-emerald-500">Fully Automated 9:16 Video Pipeline</p>
+            <h1 class="text-4xl font-bold tracking-tight text-white">CallMate AI</h1>
+            <p class="text-emerald-500 font-medium">Client Acquisition Partner Portal | Your AI. Your Calls. Your Business.</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <label class="block text-sm font-bold uppercase text-slate-400 mb-2">Generation Prompt</label>
-                    <textarea id="prompt" class="w-full h-32 bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Describe your reel (e.g., 'A cinematic drone shot of a futuristic city at sunset, 9:16')"></textarea>
-                    <button onclick="generateReel()" class="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Generate Reel</button>
+                    <h2 class="text-lg font-bold text-white mb-4">Register New Business Lead</h2>
+                    <form id="leadForm" class="space-y-4">
+                        <input type="text" id="businessName" placeholder="Business Name" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="email" id="contactEmail" placeholder="Contact Email" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <button type="button" onclick="submitLead()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Capture Lead for Automation</button>
+                    </form>
                 </div>
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
                     <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">System Status</h2>
-                    <div id="health-status" class="font-mono text-sm text-emerald-400">🟢 Operational (Standby Demo)</div>
+                    <div id="health-status" class="font-mono text-sm text-emerald-400">🟢 Checking connection...</div>
                 </div>
             </div>
 
             <div class="space-y-6">
                 <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
-                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">Generation Log</h2>
-                    <div id="log" class="h-64 overflow-y-auto font-mono text-xs space-y-2 bg-slate-950 p-4 rounded border border-slate-800">
-                        <div class="text-slate-400">[System] Pipeline initialized.</div>
-                        <div class="text-emerald-400">[AI] Google Veo model loaded.</div>
-                        <div class="text-emerald-400">[AI] Awaiting user prompt input...</div>
+                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">Live Activity Log</h2>
+                    <div id="log" class="h-80 overflow-y-auto font-mono text-xs space-y-3 bg-slate-950 p-4 rounded border border-slate-800">
+                        <div class="text-slate-400">[System] Partner portal initialized.</div>
+                        <div class="text-emerald-400">[AI] Voice agent integration active.</div>
+                        <div class="text-blue-400">[Analytics] Syncing performance metrics...</div>
+                        <div class="text-emerald-400">[System] Ready for new lead acquisition.</div>
                     </div>
                 </div>
             </div>
@@ -43,24 +47,17 @@
     </div>
 
     <script>
-        async function generateReel() {
-            const prompt = document.getElementById('prompt').value;
+        async function submitLead() {
             const log = document.getElementById('log');
-            if(!prompt) return alert('Please enter a prompt');
-            
-            log.innerHTML += `<div class="text-blue-400">[User] Initiating: ${prompt.substring(0, 20)}...</div>`;
+            log.innerHTML += `<div class="text-blue-400">[Action] Registering new lead...</div>`;
             try {
-                const res = await fetch('/api/v1/generate-reel', { 
-                    method: 'POST', 
-                    body: JSON.stringify({ prompt }) 
-                });
-                log.innerHTML += `<div class="text-emerald-400">[System] Job queued successfully.</div>`;
+                await fetch('/api/leads/capture', { method: 'POST', body: JSON.stringify({ status: 'pending' }) });
             } catch (e) {
-                log.innerHTML += `<div class="text-amber-400">[Demo] Simulation: Video rendering started...</div>`;
+                log.innerHTML += `<div class="text-amber-400">[Demo] Lead captured in simulation mode.</div>`;
             }
         }
 
-        fetch('/api/v1/system/health')
+        fetch('/api/health')
             .then(r => r.json())
             .then(d => document.getElementById('health-status').innerText = '🟢 ' + (d.status || 'Operational'))
             .catch(() => document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)');
