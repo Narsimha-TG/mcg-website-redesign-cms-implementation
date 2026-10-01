@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-app = FastAPI(title="Automated Technological Resource Discovery System")
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,44 +13,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class Resource(BaseModel):
-    id: str
-    source_url: str
-    resource_title: str
-    category: str
-    tech_stack_tags: List[str]
-    confidence_score: float
-    embedding_vector: List[float]
-    created_at: datetime
-    last_updated: datetime
+class UserTheme(BaseModel):
+    user_id: int
+    theme_preference: str
 
-# In-memory seed data
-resources_db = [
-    Resource(
-        id="1",
-        source_url="https://github.com/example/repo",
-        resource_title="Distributed Scraper",
-        category="Infrastructure",
-        tech_stack_tags=["Python", "FastAPI", "Redis"],
-        confidence_score=0.98,
-        embedding_vector=[0.1, 0.2, 0.3],
-        created_at=datetime.now(),
-        last_updated=datetime.now()
-    )
+class ChatQuery(BaseModel):
+    user_id: int
+    message: str
+
+# In-memory store
+db = [
+    {"id": 1, "user_id": 101, "theme_preference": "light", "ai_response_payload": "Hello!", "created_at": datetime.now().isoformat()}
 ]
 
-@app.get("/api/v1/health")
+@app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "worker_status": "active", "db_connectivity": "connected"}
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
-@app.get("/api/v1/resources", response_model=List[Resource])
-def get_resources(page: int = 1, limit: int = 10):
-    return resources_db
+@app.post("/api/theme/toggle")
+def toggle_theme(data: UserTheme):
+    for record in db:
+        if record["user_id"] == data.user_id:
+            record["theme_preference"] = data.theme_preference
+            return {"status": "success", "new_theme": data.theme_preference}
+    return {"status": "error", "message": "User not found"}
 
-@app.post("/api/v1/tasks/trigger")
-def trigger_task(workflow_type: str):
-    return {"message": f"Workflow {workflow_type} triggered successfully", "task_id": "task-uuid-123"}
+@app.post("/api/chat/query")
+def chat_query(query: ChatQuery):
+    # Mock AI integration
+    response = f"AI processed: {query.message}"
+    return {"user_id": query.user_id, "ai_response_payload": response}
 
-@app.get("/api/v1/analytics/summary")
-def get_analytics():
-    return {"discovery_rate": 150, "avg_quality_score": 0.92, "total_resources": len(resources_db)}
+@app.get("/api/data/fetch")
+def fetch_data():
+    return {"data": db}
