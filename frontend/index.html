@@ -5,71 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>AI Platform | RAG & Test Automation</title>
+    <title>AI Reels Automation | MVP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' };
-    </script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
 </head>
-<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans min-h-screen p-4 md:p-8 transition-colors duration-300">
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-8 border-b border-slate-200 dark:border-slate-800 pb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight">AI Platform</h1>
-                <p class="text-emerald-600 dark:text-emerald-500">RAG Chatbot & Test Automation Suite</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <button id="theme-toggle" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
-                    Toggle Theme
-                </button>
-            </div>
+<body class="bg-slate-950 text-slate-200 font-sans min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 border-b border-slate-800 pb-6">
+            <h1 class="text-3xl font-bold tracking-tight">AI Reels Automation</h1>
+            <p class="text-emerald-500">Fully Automated 9:16 Video Pipeline</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">RAG Chat Interface</h2>
-                    <div id="chat-log" class="h-80 overflow-y-auto font-mono text-sm space-y-3 bg-white dark:bg-slate-950 p-4 rounded border border-slate-200 dark:border-slate-800">
-                        <div class="text-blue-600 dark:text-blue-400">[System] RAG pipeline initialized.</div>
-                        <div class="text-slate-600 dark:text-slate-300">User: Run regression tests.</div>
-                        <div class="text-emerald-600 dark:text-emerald-400">AI: Triggering test suite via /api/reviews...</div>
-                        <div class="text-emerald-600 dark:text-emerald-400">AI: Test execution complete. Status: Passed.</div>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-6">
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <label class="block text-sm font-bold uppercase text-slate-400 mb-2">Generation Prompt</label>
+                    <textarea id="prompt" class="w-full h-32 bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Describe your reel (e.g., 'A cinematic drone shot of a futuristic city at sunset, 9:16')"></textarea>
+                    <button onclick="generateReel()" class="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Generate Reel</button>
+                </div>
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">System Status</h2>
+                    <div id="health-status" class="font-mono text-sm text-emerald-400">🟢 Operational (Standby Demo)</div>
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">System Health</h2>
-                    <div id="health-status" class="font-mono text-sm text-emerald-600 dark:text-emerald-400">🟢 Operational (Standby Demo)</div>
-                </div>
-                <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Test Automation</h2>
-                    <button onclick="runTests()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">Run Test Suite</button>
+                <div class="p-6 rounded-xl bg-slate-900 border border-slate-800">
+                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4">Generation Log</h2>
+                    <div id="log" class="h-64 overflow-y-auto font-mono text-xs space-y-2 bg-slate-950 p-4 rounded border border-slate-800">
+                        <div class="text-slate-400">[System] Pipeline initialized.</div>
+                        <div class="text-emerald-400">[AI] Google Veo model loaded.</div>
+                        <div class="text-emerald-400">[AI] Awaiting user prompt input...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const toggleBtn = document.getElementById('theme-toggle');
-        toggleBtn.addEventListener('click', async () => {
-            document.documentElement.classList.toggle('dark');
+        async function generateReel() {
+            const prompt = document.getElementById('prompt').value;
+            const log = document.getElementById('log');
+            if(!prompt) return alert('Please enter a prompt');
+            
+            log.innerHTML += `<div class="text-blue-400">[User] Initiating: ${prompt.substring(0, 20)}...</div>`;
             try {
-                await fetch('/api/theme/toggle', { method: 'POST' });
-            } catch (e) { console.log('Theme toggle synced locally.'); }
-        });
-
-        async function runTests() {
-            try {
-                await fetch('/api/reviews', { method: 'POST', body: JSON.stringify({action: 'run_tests'}) });
-                alert('Test suite triggered successfully.');
+                const res = await fetch('/api/v1/generate-reel', { 
+                    method: 'POST', 
+                    body: JSON.stringify({ prompt }) 
+                });
+                log.innerHTML += `<div class="text-emerald-400">[System] Job queued successfully.</div>`;
             } catch (e) {
-                alert('Demo mode: Test execution simulated.');
+                log.innerHTML += `<div class="text-amber-400">[Demo] Simulation: Video rendering started...</div>`;
             }
         }
 
-        fetch('/api/health')
+        fetch('/api/v1/system/health')
             .then(r => r.json())
             .then(d => document.getElementById('health-status').innerText = '🟢 ' + (d.status || 'Operational'))
             .catch(() => document.getElementById('health-status').innerText = '🟢 Operational (Standby Demo)');
