@@ -5,43 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>MCG CMS | Full-Stack Dashboard</title>
+    <title>MCG CMS | Milestone Approval Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
-        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
             <div>
-                <h1 class="text-3xl font-extrabold text-slate-900">MCG CMS Dashboard</h1>
-                <p class="text-slate-500">Full-stack responsive CMS & Automated Verification</p>
+                <h1 class="text-3xl font-extrabold tracking-tight">MCG CMS Dashboard</h1>
+                <p class="text-slate-500">Automated Milestone Approval & Verification System</p>
             </div>
-            <div id="status-indicator" class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">🟢 Operational (Standby Demo)</div>
+            <div id="status-indicator" class="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-bold border border-emerald-200">🟢 Operational (Standby Demo)</div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-                <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <h2 class="text-lg font-bold mb-4">Control Action Panel</h2>
                     <div class="flex flex-wrap gap-3">
-                        <button onclick="triggerAction('/api/verify')" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md">Run Verification</button>
-                        <button onclick="triggerAction('/api/reviews')" class="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition shadow-md">Submit Review</button>
+                        <button onclick="triggerAction('/api/milestone/approve')" class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium">Approve Milestone</button>
+                        <button onclick="triggerAction('/api/reviews')" class="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-950 transition font-medium">Submit Review</button>
                     </div>
                 </section>
 
-                <section class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <section class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <h2 class="text-lg font-bold mb-4">Live Metrics</h2>
                     <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Score: <span id="score" class="block font-mono font-bold text-xl">98.2</span></div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Latency: <span id="latency" class="block font-mono font-bold text-xl">24ms</span></div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Verified: <span id="verified" class="block font-mono font-bold text-xl">100%</span></div>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">Uptime: <span id="uptime" class="block font-mono font-bold text-xl">99.9%</span></div>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">Score: <span id="score" class="block font-mono font-bold text-xl">98.2</span></div>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">Latency: <span id="latency" class="block font-mono font-bold text-xl">24ms</span></div>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">Verified: <span id="verified" class="block font-mono font-bold text-xl">100%</span></div>
+                        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">Uptime: <span id="uptime" class="block font-mono font-bold text-xl">99.9%</span></div>
                     </div>
                 </section>
             </div>
 
-            <aside class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h2 class="text-lg font-bold mb-4">Agent Decision Log</h2>
-                <div id="log" class="h-80 overflow-y-auto font-mono text-xs space-y-2 bg-slate-950 text-emerald-400 p-4 rounded-lg">
+            <aside class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Agent Decision Log</h2>
+                <div id="log" class="h-80 overflow-y-auto font-mono text-xs space-y-3 text-slate-600 bg-slate-50 p-4 rounded-lg">
                     <div>[System] Initializing CMS Core...</div>
                     <div>[API] Connection established to /api/health.</div>
                     <div>[Auth] Verification module active.</div>
@@ -54,14 +54,15 @@
     <script>
         async function triggerAction(endpoint) {
             const log = document.getElementById('log');
-            log.innerHTML += `<div>[Action] Triggering ${endpoint}...</div>`;
+            log.innerHTML += `<div class="text-blue-600">[Action] Triggering ${endpoint}...</div>`;
             try {
                 const res = await fetch(endpoint, { method: 'POST' });
                 if (!res.ok) throw new Error();
+                log.innerHTML += `<div class="text-emerald-600">[Success] ${endpoint} processed.</div>`;
             } catch (e) {
-                log.innerHTML += `<div class="text-amber-400">[Demo] Action processed successfully.</div>`;
-                log.scrollTop = log.scrollHeight;
+                log.innerHTML += `<div class="text-amber-600">[Demo] ${endpoint} simulated successfully.</div>`;
             }
+            log.scrollTop = log.scrollHeight;
         }
 
         async function init() {

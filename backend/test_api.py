@@ -12,23 +12,24 @@ def test_health_check():
 def test_get_analytics():
     response = client.get("/api/analytics")
     assert response.status_code == 200
-    data = response.json()
-    assert "total_items" in data
-    assert "average_score" in data
+    assert isinstance(response.json(), list)
 
-def test_submit_review():
+def test_create_review():
     payload = {
-        "id": "3",
-        "title": "Test Content",
-        "status": "published",
-        "score": 92.0,
-        "timestamp": "2023-10-27T10:00:00",
-        "metadata": {"author": "QA"}
+        "title": "Test Integration Review",
+        "status": "pending",
+        "score": 9.5
     }
     response = client.post("/api/reviews", json=payload)
-    assert response.status_code == 200
-    assert response.json()["message"] == "Review submitted successfully"
-    
-    # Verify it was added
-    get_response = client.get("/api/content")
-    assert any(item["id"] == "3" for item in get_response.json())
+    assert response.status_code == 201
+    data = response.json()
+    assert data["title"] == payload["title"]
+    assert "id" in data
+
+def test_approve_milestone_not_found():
+    payload = {
+        "id": "non-existent-id",
+        "verification_token": "secret-token"
+    }
+    response = client.post("/api/milestone/approve", json=payload)
+    assert response.status_code == 404

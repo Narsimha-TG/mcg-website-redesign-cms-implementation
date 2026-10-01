@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+import uuid
 
 app = FastAPI(title="MCG Website Redesign API")
 
@@ -13,42 +14,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ContentItem(BaseModel):
-    id: str
+class Review(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     status: str
     score: float
-    timestamp: str
-    verification_result: Optional[str] = None
-    metadata: dict = {}
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class MilestoneApproval(BaseModel):
+    id: str
+    verification_token: str
 
 # In-memory seed data
 db = [
-    ContentItem(id="1", title="Homepage Hero", status="published", score=95.5, timestamp=datetime.now().isoformat()),
-    ContentItem(id="2", title="About Us", status="draft", score=88.0, timestamp=datetime.now().isoformat())
+    Review(title="Initial Design Review", status="pending", score=8.5),
+    Review(title="CMS Integration", status="approved", score=9.2)
 ]
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    return {"status": "healthy", "timestamp": datetime.utcnow()}
 
-@app.get("/api/analytics")
+@app.get("/api/analytics", response_model=List[Review])
 def get_analytics():
-    return {"total_items": len(db), "average_score": sum(i.score for i in db) / len(db) if db else 0}
-
-@app.post("/api/reviews")
-def submit_review(item: ContentItem):
-    db.append(item)
-    return {"message": "Review submitted successfully", "id": item.id}
-
-@app.post("/api/verify")
-def trigger_verification(item_id: str):
-    for item in db:
-        if item.id == item_id:
-            item.verification_result = "Verified"
-            return {"status": "success", "item_id": item_id}
-    raise HTTPException(status_code=404, detail="Item not found")
-
-@app.get("/api/content", response_model=List[ContentItem])
-def get_content():
     return db
+
+@app.post("/api/reviews", status_code=status.HTTP_201_CREATED)
+def create_review(review: Review):
+    db.append(review)
+    return review
+
+@app.post("/api/milestone/approve")
+def approve_milestone(data: MilestoneApproval):
+    for item in db:
+        if item.id == data.id:
+            item.status = "approved"
+            return {"message": "Milestone approved successfully", "id": data.id}
+    raise HTTPException(status_code=404, detail="Milestone not found")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
