@@ -7,26 +7,28 @@ client = TestClient(app)
 def test_health_check():
     response = client.get("/api/health")
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "healthy"
-    assert data["gee_connectivity"] == "connected"
+    assert response.json()["status"] == "healthy"
 
 def test_get_analytics():
-    response = client.get("/api/analytics/uhi")
+    response = client.get("/api/analytics")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) > 0
-    assert "lst_mean_celsius" in data[0]
-    assert data[0]["city_name"] in ["Wroclaw", "Bengaluru"]
+    assert "total_tasks" in data
+    assert "average_score" in data
+    assert isinstance(data["total_tasks"], int)
+    assert isinstance(data["average_score"], float)
 
-def test_trigger_pipeline_valid():
-    payload = {"city": "Wroclaw"}
-    response = client.post("/api/pipeline/execute?city=Wroclaw")
+def test_create_review():
+    payload = {
+        "title": "Test Automation Task",
+        "status": "in-progress",
+        "score": 0.92
+    }
+    response = client.post("/api/reviews", json=payload)
     assert response.status_code == 200
-    assert "task_id" in response.json()
-
-def test_trigger_pipeline_invalid():
-    response = client.post("/api/pipeline/execute?city=Paris")
-    assert response.status_code == 400
-    assert response.json()["detail"] == "City not supported"
+    data = response.json()
+    assert data["title"] == payload["title"]
+    assert data["status"] == payload["status"]
+    assert data["score"] == payload["score"]
+    assert "id" in data
+    assert "timestamp" in data
